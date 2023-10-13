@@ -18,13 +18,13 @@ fn main() {
     let mut enmtrx = EnrichMtrx::new(&mtrx, &HomI3);
     enmtrx.g_eliminate();
     println!("{}{}{}", &mtrx, &enmtrx.right, &mtrx * &enmtrx.right);
-}
+// }
 
 // fn main() -> () {
-//     let camera = Camera::from_file("file.txt");
+    let camera = Camera::from_file("file.txt", "img-3.png");
 
-//     match camera.run() {
-//         Ok(_) => (),
-//         Err(err) => println!("got this error: {}", err),
-//     }
-// }
+    match camera.run() {
+        Ok(_) => (),
+        Err(err) => println!("got this error: {}", err),
+    }
+}

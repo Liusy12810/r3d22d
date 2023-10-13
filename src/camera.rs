@@ -1,7 +1,7 @@
 //! oh
 //!
 
-use std::io::{BufReader, Read};
+use std::{io::{BufReader, Read}, path::Path};
 
 mod spot;
 
@@ -17,6 +17,7 @@ struct Tmp(f64, [i32; 2], f64);
 #[derive(Debug, Clone)]
 pub struct Camera {
     points: Vec<spot::Spot>,
+    output: &'static str,
     /// the first position for width
     /// the second position for height
     screen: [i32; 2],
@@ -26,7 +27,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn from_file(file: &str) -> Camera {
+    pub fn from_file(file: &str, output: &'static str) -> Camera {
         let fp = std::fs::File::open(file).expect("ERROR: file not exist!");
         let mut reader = BufReader::new(fp);
         let mut buf = String::new();
@@ -36,7 +37,13 @@ impl Camera {
         let mut iter = buf.lines();
         let Tmp(height, screen, dist) = iter.next().expect("ERROR: Can't read line camera").into();
         let points: Vec<Spot> = iter.map(|s| Spot::new(s)).collect();
-        Camera { points, screen, height, dist }
+        Camera {
+            points,
+            screen,
+            height,
+            dist,
+            output,
+        }
     }
 
     pub fn run(&self) -> Result<Box<str>, Box<str>> {
@@ -70,7 +77,7 @@ impl Camera {
             }
             let x = (height as f64 * pos.x / pos.w) as i32 + width / 2;
             let y = (height as f64 * pos.y / pos.w) as i32 + height / 2;
-            let r = (height as f64 * rad / pos.w) as i32;
+            let r = (height as f64 * rad / pos.w / self.height) as i32;
             println!("{}, {}, {}", x, y, r);
             for i in (x - r - 1).max(0)..(x + r + 1).min(width) {
                 for j in (y - r - 1).max(0)..(y + r + 1).min(height) {
@@ -79,13 +86,14 @@ impl Camera {
                         continue;
                     };
                     let rat = (r as f64 - sqr.sqrt()) / r as f64;
-                    let mut col = col.times(bri + rat) * rat;
+                    let mut col = col.times(1.0 + bri * rat) * rat;
                     col = col * (1.0 - pos.w * 0.002).max(0.3);
                     image.get_pixel_mut(i as u32, j as u32).blend(&col.into());
                 }
             }
         });
-        match image.save_with_format("img.png", image::ImageFormat::Png) {
+        let path = Path::new("images");
+        match image.save_with_format(path.join(self.output), image::ImageFormat::Png) {
             Ok(_) => (),
             Err(err) => return Err(format!("Oops! some error ossurs: {}", err).into()),
         };

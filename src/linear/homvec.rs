@@ -90,6 +90,20 @@ impl From<(f64, f64, f64, f64)> for HomVec3d {
     }
 }
 
+impl Add for &HomVec3d {
+    type Output = HomVec3d;
+
+    #[inline]
+    fn add(self, rhs: Self) -> Self::Output {
+        HomVec3d::new(
+            self.x + rhs.x,
+            self.y + rhs.y,
+            self.z + rhs.z,
+            self.w + rhs.w,
+        )
+    }
+}
+
 impl Add for HomVec3d {
     type Output = HomVec3d;
 
@@ -189,6 +203,15 @@ impl Add for HomVec2d {
     }
 }
 
+impl Add for &HomVec2d {
+    type Output = HomVec2d;
+
+    #[inline]
+    fn add(self, rhs: Self) -> Self::Output {
+        HomVec2d::new(self.x + rhs.x, self.y + rhs.y, self.w + rhs.w)
+    }
+}
+
 impl Mul<HomVec2d> for f64 {
     type Output = HomVec2d;
 
@@ -232,12 +255,6 @@ impl PartialEq for HomVec2d {
 }
 
 impl Eq for HomVec2d {}
-
-impl PartialOrd for HomVec2d {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.w.partial_cmp(&other.w)
-    }
-}
 
 impl Display for HomVec2d {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -414,10 +431,10 @@ impl Mul<&HomMtrx3x3> for HomMtrx3x3 {
     #[inline]
     fn mul(self, rhs: &HomMtrx3x3) -> Self::Output {
         HomMtrx3x3::new(
-            &self * rhs.c1,
-            &self * rhs.c2,
-            &self * rhs.c3,
-            &self * rhs.cw,
+            &self * &rhs.c1,
+            &self * &rhs.c2,
+            &self * &rhs.c3,
+            &self * &rhs.cw,
         )
     }
 }
@@ -427,7 +444,12 @@ impl Mul for &HomMtrx3x3 {
 
     #[inline]
     fn mul(self, rhs: Self) -> Self::Output {
-        HomMtrx3x3::new(self * rhs.c1, self * rhs.c2, self * rhs.c3, self * rhs.cw)
+        HomMtrx3x3::new(
+            self * &rhs.c1,
+            self * &rhs.c2,
+            self * &rhs.c3,
+            self * &rhs.cw,
+        )
     }
 }
 
@@ -516,7 +538,7 @@ impl Mul<&HomMtrx2x3> for HomMtrx3x3 {
 
     #[inline]
     fn mul(self, rhs: &HomMtrx2x3) -> Self::Output {
-        HomMtrx2x3::new(&self * rhs.c1, &self * rhs.c2, &self * rhs.cw)
+        HomMtrx2x3::new(&self * &rhs.c1, &self * &rhs.c2, &self * &rhs.cw)
     }
 }
 
@@ -525,7 +547,7 @@ impl Mul<&HomMtrx2x3> for &HomMtrx3x3 {
 
     #[inline]
     fn mul(self, rhs: &HomMtrx2x3) -> Self::Output {
-        HomMtrx2x3::new(self * rhs.c1, self * rhs.c2, self * rhs.cw)
+        HomMtrx2x3::new(self * &rhs.c1, self * &rhs.c2, self * &rhs.cw)
     }
 }
 
@@ -610,7 +632,7 @@ impl Mul<&HomMtrx2x3> for HomMtrx3x2 {
     type Output = HomMtrx2x2;
 
     fn mul(self, rhs: &HomMtrx2x3) -> Self::Output {
-        HomMtrx2x2::new(&self * rhs.c1, &self * rhs.c2, &self * rhs.cw)
+        HomMtrx2x2::new(&self * &rhs.c1, &self * &rhs.c2, &self * &rhs.cw)
     }
 }
 
@@ -618,7 +640,7 @@ impl Mul<&HomMtrx2x3> for &HomMtrx3x2 {
     type Output = HomMtrx2x2;
 
     fn mul(self, rhs: &HomMtrx2x3) -> Self::Output {
-        HomMtrx2x2::new(self * rhs.c1, self * rhs.c2, self * rhs.cw)
+        HomMtrx2x2::new(self * &rhs.c1, self * &rhs.c2, self * &rhs.cw)
     }
 }
 
@@ -627,10 +649,10 @@ impl Mul<&HomMtrx3x2> for HomMtrx2x3 {
 
     fn mul(self, rhs: &HomMtrx3x2) -> Self::Output {
         HomMtrx3x3::new(
-            &self * rhs.c1,
-            &self * rhs.c2,
-            &self * rhs.c3,
-            &self * rhs.cw,
+            &self * &rhs.c1,
+            &self * &rhs.c2,
+            &self * &rhs.c3,
+            &self * &rhs.cw,
         )
     }
 }
@@ -639,7 +661,12 @@ impl Mul<&HomMtrx3x2> for &HomMtrx2x3 {
     type Output = HomMtrx3x3;
 
     fn mul(self, rhs: &HomMtrx3x2) -> Self::Output {
-        HomMtrx3x3::new(self * rhs.c1, self * rhs.c2, self * rhs.c3, self * rhs.cw)
+        HomMtrx3x3::new(
+            self * &rhs.c1,
+            self * &rhs.c2,
+            self * &rhs.c3,
+            self * &rhs.cw,
+        )
     }
 }
 
@@ -648,10 +675,10 @@ impl Mul<&HomMtrx3x3> for HomMtrx3x2 {
 
     fn mul(self, rhs: &HomMtrx3x3) -> Self::Output {
         HomMtrx3x2::new(
-            &self * rhs.c1,
-            &self * rhs.c2,
-            &self * rhs.c3,
-            &self * rhs.cw,
+            &self * &rhs.c1,
+            &self * &rhs.c2,
+            &self * &rhs.c3,
+            &self * &rhs.cw,
         )
     }
 }
@@ -660,7 +687,12 @@ impl Mul<&HomMtrx3x3> for &HomMtrx3x2 {
     type Output = HomMtrx3x2;
 
     fn mul(self, rhs: &HomMtrx3x3) -> Self::Output {
-        HomMtrx3x2::new(self * rhs.c1, self * rhs.c2, self * rhs.c3, self * rhs.cw)
+        HomMtrx3x2::new(
+            self * &rhs.c1,
+            self * &rhs.c2,
+            self * &rhs.c3,
+            self * &rhs.cw,
+        )
     }
 }
 
@@ -703,6 +735,14 @@ impl From<[[f64; 3]; 3]> for HomMtrx2x2 {
     }
 }
 
+impl Add<Self> for HomMtrx2x2 {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self::new(&self.c1 + &rhs.c1, &self.c2 + &rhs.c2, &self.cw + &rhs.cw)
+    }
+}
+
 impl Mul<HomVec2d> for HomMtrx2x2 {
     type Output = HomVec2d;
 
@@ -732,5 +772,53 @@ impl Mul<&HomVec2d> for &HomMtrx2x2 {
 
     fn mul(self, rhs: &HomVec2d) -> Self::Output {
         rhs.x * self.c1 + rhs.y * self.c2 + rhs.w * self.cw
+    }
+}
+
+impl Mul<&HomMtrx2x2> for HomMtrx2x2 {
+    type Output = Self;
+
+    fn mul(self, rhs: &HomMtrx2x2) -> Self::Output {
+        HomMtrx2x2::new(&self * &rhs.c1, &self * &rhs.c2, &self * &rhs.cw)
+    }
+}
+
+impl Mul<&HomMtrx2x2> for &HomMtrx2x2 {
+    type Output = HomMtrx2x2;
+
+    fn mul(self, rhs: &HomMtrx2x2) -> Self::Output {
+        HomMtrx2x2::new(self * &rhs.c1, self * &rhs.c2, self * &rhs.cw)
+    }
+}
+
+impl Mul<&HomMtrx3x2> for HomMtrx2x2 {
+    type Output = Self;
+
+    fn mul(self, rhs: &HomMtrx3x2) -> Self::Output {
+        HomMtrx2x2::new(&self * &rhs.c1, &self * &rhs.c2, &self * &rhs.cw)
+    }
+}
+
+impl Mul<&HomMtrx3x2> for &HomMtrx2x2 {
+    type Output = HomMtrx2x2;
+
+    fn mul(self, rhs: &HomMtrx3x2) -> Self::Output {
+        HomMtrx2x2::new(self * &rhs.c1, self * &rhs.c2, self * &rhs.cw)
+    }
+}
+
+impl Mul<&HomMtrx2x2> for HomMtrx2x3 {
+    type Output = Self;
+
+    fn mul(self, rhs: &HomMtrx2x2) -> Self::Output {
+        HomMtrx2x3::new(&self * &rhs.c1, &self * &rhs.c2, &self * &rhs.cw)
+    }
+}
+
+impl Mul<&HomMtrx2x2> for &HomMtrx2x3 {
+    type Output = HomMtrx2x3;
+
+    fn mul(self, rhs: &HomMtrx2x2) -> Self::Output {
+        HomMtrx2x3::new(self * &rhs.c1, self * &rhs.c2, self * &rhs.cw)
     }
 }

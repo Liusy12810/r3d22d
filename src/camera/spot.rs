@@ -192,10 +192,9 @@ impl PartialEq for Spot2d {
 
 impl PartialOrd for Spot2d {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        match self.pos.partial_cmp(&other.pos) {
-            Some(core::cmp::Ordering::Equal) => {}
-            ord => return ord,
+        match self.pos.w.partial_cmp(&other.pos.w) {
+            Some(ord) => Some(ord),
+            None => self.rad.partial_cmp(&other.rad),
         }
-        self.rad.partial_cmp(&other.rad)
     }
 }
