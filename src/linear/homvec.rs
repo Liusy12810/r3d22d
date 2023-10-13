@@ -7,14 +7,17 @@ use std::{
     ops::{Add, Mul},
 };
 
-pub const HomI3: HomMtrx3x3 = HomMtrx3x3 {
+#[allow(unused)]
+
+pub const HOM_I3: HomMtrx3x3 = HomMtrx3x3 {
     c1: HomVec3d { x: 1.0, y: 0.0, z: 0.0, w: 0.0 },
     c2: HomVec3d { x: 0.0, y: 1.0, z: 0.0, w: 0.0 },
     c3: HomVec3d { x: 0.0, y: 0.0, z: 1.0, w: 0.0 },
     cw: HomVec3d { x: 0.0, y: 0.0, z: 0.0, w: 1.0 },
 };
 
-pub const HomI2: HomMtrx2x2 = HomMtrx2x2 {
+#[allow(unused)]
+pub const HOM_I2: HomMtrx2x2 = HomMtrx2x2 {
     c1: HomVec2d { x: 1.0, y: 0.0, w: 0.0 },
     c2: HomVec2d { x: 0.0, y: 1.0, w: 0.0 },
     cw: HomVec2d { x: 0.0, y: 0.0, w: 1.0 },

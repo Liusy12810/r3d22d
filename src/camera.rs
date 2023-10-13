@@ -1,7 +1,10 @@
 //! oh
 //!
 
-use std::{io::{BufReader, Read}, path::Path};
+use std::{
+    io::{BufReader, Read},
+    path::Path,
+};
 
 mod spot;
 
@@ -46,7 +49,7 @@ impl Camera {
         }
     }
 
-    pub fn run(&self) -> Result<Box<str>, Box<str>> {
+    pub fn render(&self) -> Result<RgbaImage, Box<str>> {
         let [width, height] = self.screen;
         let transform = HomMtrx3x2::from([
             [1.0 / self.height, 0.0, 0.0, 0.0],
@@ -78,7 +81,9 @@ impl Camera {
             let x = (height as f64 * pos.x / pos.w) as i32 + width / 2;
             let y = (height as f64 * pos.y / pos.w) as i32 + height / 2;
             let r = (height as f64 * rad / pos.w / self.height) as i32;
+            #[cfg(debug_assertions)]
             println!("{}, {}, {}", x, y, r);
+
             for i in (x - r - 1).max(0)..(x + r + 1).min(width) {
                 for j in (y - r - 1).max(0)..(y + r + 1).min(height) {
                     let sqr = ((x - i) * (x - i) + (y - j) * (y - j)) as f64;
@@ -92,12 +97,33 @@ impl Camera {
                 }
             }
         });
-        let path = Path::new("images");
-        match image.save_with_format(path.join(self.output), image::ImageFormat::Png) {
-            Ok(_) => (),
-            Err(err) => return Err(format!("Oops! some error ossurs: {}", err).into()),
+        Ok(image.into())
+    }
+
+    pub fn run(&self) -> Option<&'static str> {
+        let image = match self.render() {
+            Ok(image) => image,
+            Err(err) => panic!("got this error: {}", err),
         };
-        Ok("Rendering finished!!!".into())
+
+        let out_dir = Path::new("images");
+        if !out_dir.exists() {
+            match std::fs::create_dir(out_dir) {
+                Ok(_) => (),
+                Err(e) => {
+                    eprintln!("Oops! {}", e);
+                    return None;
+                }
+            }
+        }
+
+        match image.save_with_format(out_dir.join(self.output), image::ImageFormat::Png) {
+            Ok(_) => Some("Yeah!, The rendering finished!"),
+            Err(e) => {
+                eprintln!("Oops! {}", e);
+                None
+            }
+        }
     }
 }
 
