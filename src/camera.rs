@@ -20,7 +20,7 @@ struct Tmp(f64, [i32; 2], f64);
 #[derive(Debug, Clone)]
 pub struct Camera {
     points: Vec<spot::Spot>,
-    output: &'static str,
+    output: Box<str>,
     /// the first position for width
     /// the second position for height
     screen: [i32; 2],
@@ -30,7 +30,8 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn from_file(file: &str, output: &'static str) -> Camera {
+    pub fn from_file(file: &str, output: & str) -> Camera {
+        println!("{}, {}", file, output);
         let fp = std::fs::File::open(file).expect("ERROR: file not exist!");
         let mut reader = BufReader::new(fp);
         let mut buf = String::new();
@@ -40,6 +41,7 @@ impl Camera {
         let mut iter = buf.lines();
         let Tmp(height, screen, dist) = iter.next().expect("ERROR: Can't read line camera").into();
         let points: Vec<Spot> = iter.map(|s| Spot::new(s)).collect();
+        let output = output.into();
         Camera {
             points,
             screen,
@@ -73,16 +75,14 @@ impl Camera {
         let mut image: RgbaImage =
             image::ImageBuffer::from_fn(width as u32, height as u32, |_, _| Rgba([4, 1, 20, 255]));
 
-        points_2d.iter().for_each(|point| {
+        for point in points_2d.iter() {
             let Spot2d { pos, rad, col, bri } = point;
             if pos.w < self.dist {
-                return;
+                continue;
             }
             let x = (height as f64 * pos.x / pos.w) as i32 + width / 2;
             let y = (height as f64 * pos.y / pos.w) as i32 + height / 2;
             let r = (height as f64 * rad / pos.w / self.height) as i32;
-            #[cfg(debug_assertions)]
-            println!("{}, {}, {}", x, y, r);
 
             for i in (x - r - 1).max(0)..(x + r + 1).min(width) {
                 for j in (y - r - 1).max(0)..(y + r + 1).min(height) {
@@ -96,7 +96,7 @@ impl Camera {
                     image.get_pixel_mut(i as u32, j as u32).blend(&col.into());
                 }
             }
-        });
+        };
         Ok(image.into())
     }
 
@@ -117,7 +117,7 @@ impl Camera {
             }
         }
 
-        match image.save_with_format(out_dir.join(self.output), image::ImageFormat::Png) {
+        match image.save_with_format(out_dir.join(&*self.output), image::ImageFormat::Png) {
             Ok(_) => Some("Yeah!, The rendering finished!"),
             Err(e) => {
                 eprintln!("Oops! {}", e);

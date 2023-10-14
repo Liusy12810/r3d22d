@@ -244,6 +244,13 @@ pub trait Matrix<T, const R: usize, const C: usize> {
     fn col_mut(&mut self, c: usize) -> [&mut T; R];
 }
 
+pub trait SqrMtrx<T, const S: usize>: Matrix<T, S, S> {
+    const S: usize = S;
+    fn inverse(&self) -> Option<Self>
+    where
+        Self: Sized;
+}
+
 impl Matrix<f64, 4, 1> for HomVec3d {
     fn row(&self, r: usize) -> [&f64; 1] {
         assert!(r < Self::R);
@@ -360,6 +367,21 @@ impl Matrix<f64, 4, 4> for HomMtrx3x3 {
                 &mut self.cw.w,
             ],
             c => panic!("impossible!!! {c}"),
+        }
+    }
+}
+
+impl SqrMtrx<f64, 4> for HomMtrx3x3 {
+    fn inverse(&self) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        let mut enrigh_matrix = EnrichMtrx::new(self, &HOM_I3);
+        enrigh_matrix.g_eliminate();
+        if !enrigh_matrix.right.row(0)[0].is_nan() {
+            Some(enrigh_matrix.right)
+        } else {
+            None
         }
     }
 }
